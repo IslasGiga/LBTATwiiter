@@ -16,18 +16,23 @@ class MenuViewController: UITableViewController{
         view.backgroundColor = .blue
         
     }
+
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "menuCellID")
-        cell.detailTextLabel?.text = "\(indexPath.row + 1)"
-        cell.textLabel?.text = "Menu Item"
-        cell.backgroundColor = .white
-        return cell
-    }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4
+        return 10
     }
-    
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
+        
+        cell.textLabel?.text = "Menu item"
+        cell.detailTextLabel?.text = "\(indexPath.row)"
+        
+        return cell
+    }
+
 }
+
+
