@@ -114,7 +114,7 @@ class HomeViewController: UITableViewController {
                 handleClose()
             }else{
                 handleOpen()
-            }
+            } 
         }
     }
     

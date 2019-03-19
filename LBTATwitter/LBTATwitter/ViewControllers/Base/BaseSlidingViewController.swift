@@ -25,23 +25,32 @@ class BaseSlidingViewController: UIViewController {
         return v
     }()
     
+    let viewBlack: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(white: 0, alpha: 0.8)
+        v.translatesAutoresizingMaskIntoConstraints = false
+        return v
+    }()
+    
+    
     fileprivate let menuWidth: CGFloat = 300
     fileprivate var isMenuOpened = false
-    
+    fileprivate var velocityOpenThreshold: CGFloat = 500
     
     var leadingAnchorViewRed: NSLayoutConstraint!
+    
+    //MARK: - ViewDidLoad
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .yellow
-        setupRedView()
-        setupBlueView()
-        
-        
+        setupViews()
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
         view.addGestureRecognizer(panGesture)
         
     }
+    
+    //MARK: - Pan functions
     
     @objc func handlePan(gesture: UIPanGestureRecognizer){
         let translation = gesture.translation(in: view)
@@ -53,6 +62,8 @@ class BaseSlidingViewController: UIViewController {
         x = max(0, x)
         
         leadingAnchorViewRed.constant = x
+        viewBlack.alpha = x / menuWidth
+        
         
         if gesture.state == .ended{
             handleEndendGesture(gesture: gesture)
@@ -60,20 +71,80 @@ class BaseSlidingViewController: UIViewController {
         
     }
     
+    
     fileprivate func handleEndendGesture(gesture: UIPanGestureRecognizer){
         let translation = gesture.translation(in: view)
-        if translation.x < menuWidth/2{
-            leadingAnchorViewRed.constant = 0
-            isMenuOpened = false
+        let velocity = gesture.velocity(in: view)
+        
+        if isMenuOpened{
+            if abs(velocity.x) > velocityOpenThreshold{
+                handleClose()
+                return
+            }
+            
+            if abs(translation.x) < menuWidth/2{
+                handleOpen()
+                
+            }else{
+                handleClose()
+            }
+           
         }else{
-            leadingAnchorViewRed.constant = menuWidth
-            isMenuOpened = true
+            if abs(velocity.x) > velocityOpenThreshold{
+                handleOpen()
+                return
+            }
+            if abs(translation.x) < menuWidth/2{
+                handleClose()
+                
+            }else{
+                handleOpen()
+            }
         }
+    }
+    
+    //MARK: - Menu open and close functions
+    
+    @objc func handleOpen(){
+        leadingAnchorViewRed.constant = menuWidth
+        isMenuOpened = true
+        performAnimations()
+    }
+    
+    @objc func handleClose(){
+        leadingAnchorViewRed.constant = 0
+        isMenuOpened = false
+        performAnimations()
+        
+    }
+    
+    fileprivate func performAnimations(){
         
         UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             self.view.layoutIfNeeded()
+            self.viewBlack.alpha = self.isMenuOpened ? 1 : 0
         })
-        
+    }
+    
+    //MARK: - Setup Views
+    
+    
+    fileprivate func setupViews() {
+        setupRedView()
+        setupBlueView()
+        setupBlackView()
+    }
+    
+    fileprivate func setupBlackView() {
+        view.addSubview(viewBlack)
+        NSLayoutConstraint.activate([
+            
+            viewBlack.topAnchor.constraint(equalTo: viewRed.topAnchor),
+            viewBlack.leadingAnchor.constraint(equalTo: viewRed.leadingAnchor),
+            viewBlack.bottomAnchor.constraint(equalTo: viewRed.bottomAnchor),
+            viewBlack.trailingAnchor.constraint(equalTo: viewRed.trailingAnchor)
+            ])
+        viewBlack.alpha = 0
     }
     
     fileprivate func setupRedView() {
@@ -93,6 +164,22 @@ class BaseSlidingViewController: UIViewController {
         
     }
     
+    
+    
+    fileprivate func setupBlueView() {
+        view.addSubview(viewBlue)
+        NSLayoutConstraint.activate([
+            viewBlue.widthAnchor.constraint(equalToConstant: menuWidth),
+            viewBlue.topAnchor.constraint(equalTo: view.topAnchor),
+            viewBlue.trailingAnchor.constraint(equalTo: viewRed.leadingAnchor),
+            viewBlue.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            viewBlue.leadingAnchor.constraint(equalTo: view.leadingAnchor)
+            ])
+        setupMenuViewController()
+    }
+    
+    //MARK: - Setup ViewControllers
+    
     fileprivate func setupHomeViewController(){
         
         let homeVC = HomeViewController()
@@ -107,19 +194,7 @@ class BaseSlidingViewController: UIViewController {
             viewHome.trailingAnchor.constraint(equalTo: viewRed.trailingAnchor),
             viewHome.leadingAnchor.constraint(equalTo: viewRed.safeAreaLayoutGuide.leadingAnchor),
             viewHome.bottomAnchor.constraint(equalTo: viewRed.bottomAnchor)
-        ])
-    }
-    
-    fileprivate func setupBlueView() {
-        view.addSubview(viewBlue)
-        NSLayoutConstraint.activate([
-            viewBlue.widthAnchor.constraint(equalToConstant: menuWidth),
-            viewBlue.topAnchor.constraint(equalTo: view.topAnchor),
-            viewBlue.trailingAnchor.constraint(equalTo: viewRed.leadingAnchor),
-            viewBlue.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            viewBlue.leadingAnchor.constraint(equalTo: view.leadingAnchor)
             ])
-        setupMenuViewController()
     }
     
     fileprivate func setupMenuViewController(){
