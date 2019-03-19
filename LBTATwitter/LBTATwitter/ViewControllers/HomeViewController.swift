@@ -26,7 +26,7 @@ class HomeViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupGesture()
+        //setupGesture()
         setupNavigationBar()
         setupMenuInitialPosition()
         setupDarkCoverView()
